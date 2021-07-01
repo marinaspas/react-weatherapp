@@ -7,19 +7,15 @@ const api = {
 };
 function App() {
   const [query, setQuery] = useState("");
-  const [stateCode, setStateCode] = useState("");
   const [weather, setWeather] = useState({});
+  const [unitType, setUnitType] = useState("metric");
 
   const search = (evt) => {
     if (evt.key === "Enter") {
-      fetch(
-        `${api.base}weather?q=${query}${stateCode}&units=metric&APPID=${api.key}`
-      )
+      fetch(`${api.base}weather?q=${query}&units=${unitType}&APPID=${api.key}`)
         .then((res) => res.json())
         .then((result) => {
           setWeather(result);
-          setQuery("");
-          setStateCode("");
           console.log(result, "this is result");
         });
     }
@@ -49,6 +45,15 @@ function App() {
       return "app";
     }
   };
+
+  const changeMetricString = () => {
+    if (unitType === "metric") {
+      return "C";
+    } else {
+      return "F";
+    }
+  };
+
   return (
     <div className={getWeatherClass(weather)}>
       <main>
@@ -72,10 +77,53 @@ function App() {
               <div className="date">{date}</div>
             </div>
             <div className="weather-box">
-              <div className="temp">{Math.round(weather.main.temp)}&deg; C</div>
+              <div className="temp">
+                {Math.round(weather.main.temp)}&deg; {changeMetricString()}
+              </div>
               <div className="weather">{weather.weather[0].main}</div>
-              <div>Feels like {Math.round(weather.main.feels_like)}</div>
+              <div>{weather.weather.description}</div>
+              <div>
+                Feels like {Math.round(weather.main.feels_like)}&deg;{" "}
+                {changeMetricString()}
+              </div>
               <div>Humidity {weather.main.humidity}%</div>
+              <div>Pressure {weather.main.pressure} hPa</div>
+              <div>
+                Min Temp {Math.round(weather.main.temp_min)}&deg;{" "}
+                {changeMetricString()}
+              </div>
+              <div>
+                Max Temp {Math.round(weather.main.temp_max)}&deg;{" "}
+                {changeMetricString()}
+              </div>
+              <div>{weather.weather[0].description}</div>
+              <div>
+                <img
+                  src={
+                    "http://openweathermap.org/img/wn/" +
+                    weather.weather[0].icon +
+                    "@4x.png"
+                  }
+                  alt="icon"
+                />
+              </div>
+
+              <button
+                onClick={() => {
+                  const newType = unitType === "metric" ? "imperial" : "metric";
+                  fetch(
+                    `${api.base}weather?q=${query}&units=${newType}&APPID=${api.key}`
+                  )
+                    .then((res) => res.json())
+                    .then((result) => {
+                      setWeather(result);
+                      setUnitType(newType);
+                      console.log(result, "this is result");
+                    });
+                }}
+              >
+                switch to {unitType === "metric" ? "imperial" : "metric"}
+              </button>
             </div>
           </div>
         ) : (
