@@ -58,7 +58,7 @@ function App() {
         <div className="search-box">
           <input
             type="text"
-            onChange={(e) => setQuery(e.target.value)}
+            onInput={(e) => setQuery(e.target.value)}
             value={query}
             className="search-bar"
             placeholder="Search a City"
@@ -73,7 +73,7 @@ function App() {
                 <div className="img-wrap">
                   <img
                     src={
-                      "http://openweathermap.org/img/wn/" +
+                      "https://openweathermap.org/img/wn/" +
                       weather.weather[0].icon +
                       "@2x.png"
                     }
