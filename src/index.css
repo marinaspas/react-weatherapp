@@ -133,3 +133,24 @@ main {
 .img-wrap img {
   display: block;
 }
+
+@media only screen and (max-width: 820px) {
+  .img-wrap {
+    height: 100%;
+  }
+  .location-name {
+    font-size: 30px;
+  }
+  .metric-btn {
+    font-size: 16px;
+  }
+  .date {
+    font-size: 18px;
+  }
+  .weather-details {
+    margin-bottom: 30px;
+  }
+  .search-box {
+    margin: 0 0 50px;
+  }
+} 
