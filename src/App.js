@@ -27,7 +27,7 @@ function App() {
         }
       });
     }
-  }, [query, unitType]);
+  });
 
   var options = {
     weekday: "long",
