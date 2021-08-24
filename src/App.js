@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const api = {
   key: process.env.REACT_APP_OPENWEATHER_API_KEY,
@@ -8,16 +8,26 @@ function App() {
   const [query, setQuery] = useState("");
   const [weather, setWeather] = useState({});
   const [unitType, setUnitType] = useState("metric");
-
-  const search = (evt) => {
-    if (evt.key === "Enter") {
-      fetch(`${api.base}weather?q=${query}&units=${unitType}&APPID=${api.key}`)
-        .then((res) => res.json())
-        .then((result) => {
-          setWeather(result);
-        });
+  const failedSearches = localStorage.hasOwnProperty("failed_searches")
+    ? JSON.parse(localStorage.getItem("failed_searches"))
+    : [];
+  useEffect(() => {
+    if (!isFailedSearch(query) && query.length > 0) {
+      fetch(
+        `${api.base}weather?q=${query}&units=${unitType}&appid=${api.key}`
+      ).then(async (data) => {
+        if (data.ok) {
+          const res = await data.json();
+          setWeather(res);
+        } else {
+          localStorage.setItem(
+            "failed_searches",
+            JSON.stringify([...failedSearches, query])
+          );
+        }
+      });
     }
-  };
+  }, [query, unitType]);
 
   var options = {
     weekday: "long",
@@ -28,6 +38,9 @@ function App() {
   let date = new Date();
   date = date.toLocaleDateString("en-US", options);
 
+  const isFailedSearch = (q) => {
+    return failedSearches.includes(q);
+  };
   const getWeatherClass = (response) => {
     if (typeof response.main != "undefined") {
       if (response.main.temp > 25) {
@@ -58,11 +71,10 @@ function App() {
         <div className="search-box">
           <input
             type="text"
-            onInput={(e) => setQuery(e.target.value)}
+            onChange={(e) => setQuery(e.target.value)}
             value={query}
             className="search-bar"
             placeholder="Search a City"
-            onKeyPress={search}
           />
         </div>
 
