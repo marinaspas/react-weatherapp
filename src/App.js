@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useDebounce } from "./utils/hooks";
 
 const api = {
   key: process.env.REACT_APP_OPENWEATHER_API_KEY,
@@ -6,28 +7,35 @@ const api = {
 };
 function App() {
   const [query, setQuery] = useState("");
+  const debounced = useDebounce(query, 300);
   const [weather, setWeather] = useState({});
   const [unitType, setUnitType] = useState("metric");
   const failedSearches = localStorage.hasOwnProperty("failed_searches")
     ? JSON.parse(localStorage.getItem("failed_searches"))
     : [];
+
+  const isFailedSearch = q => {
+    return failedSearches.includes(q);
+  };
+
   useEffect(() => {
-    if (!isFailedSearch(query) && query.length > 0) {
+    if (!isFailedSearch(debounced) && debounced.length > 0) {
       fetch(
-        `${api.base}weather?q=${query}&units=${unitType}&appid=${api.key}`
-      ).then(async (data) => {
+        `${api.base}weather?q=${debounced}&units=${unitType}&appid=${api.key}`
+      ).then(async data => {
         if (data.ok) {
           const res = await data.json();
           setWeather(res);
         } else {
           localStorage.setItem(
             "failed_searches",
-            JSON.stringify([...failedSearches, query])
+            JSON.stringify([...failedSearches, debounced])
           );
         }
       });
     }
-  });
+    /* eslint-disable react-hooks/exhaustive-deps */
+  }, [debounced]);
 
   var options = {
     weekday: "long",
@@ -38,10 +46,7 @@ function App() {
   let date = new Date();
   date = date.toLocaleDateString("en-US", options);
 
-  const isFailedSearch = (q) => {
-    return failedSearches.includes(q);
-  };
-  const getWeatherClass = (response) => {
+  const getWeatherClass = response => {
     if (typeof response.main != "undefined") {
       if (response.main.temp > 25) {
         return "app hot";
@@ -71,7 +76,7 @@ function App() {
         <div className="search-box">
           <input
             type="text"
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={e => setQuery(e.target.value)}
             value={query}
             className="search-bar"
             placeholder="Search a City"
@@ -105,8 +110,8 @@ function App() {
                 fetch(
                   `${api.base}weather?q=${query}&units=${newType}&APPID=${api.key}`
                 )
-                  .then((res) => res.json())
-                  .then((result) => {
+                  .then(res => res.json())
+                  .then(result => {
                     setWeather(result);
                     setUnitType(newType);
                   });
